@@ -35,6 +35,16 @@ Sizes2 <- read.table(sizes_file2, sep = "\t", header = TRUE)
 Sizes <- rbind(Sizes1, Sizes2)
 head(Sizes)
 
+########## CORRECT NA ASSIGNMENTS #####
+Sizes$Strain[ Sizes$Strain == "na" ] <- "33"
+Sizes$Plate[ Sizes$Plate == "na"] <- "3"
+Sizes$Plate[ Sizes$Plate == "naB"] <- "4"
+Sizes$PlateID <- as.character(Sizes$PlateID)
+Sizes$PlateID[ Sizes$PlateID == "na.na" ] <- "33.3"
+Sizes$PlateID[ Sizes$PlateID == "na.naB" ] <- "33.4"
+Sizes$PlateID <- factor(Sizes$PlateID)
+##########################################
+
 # Define picture replicate (some plates were imaged twice)
 Sizes$PicRep <- "A"
 Sizes$PicRep[ grep(pattern = "B$",x = as.character(Sizes$PlateID)) ] <- "B"
@@ -52,9 +62,16 @@ Sizes$Contaminated <- paste(Sizes$PlateID,Sizes$Row, Sizes$Col, sep = "") %in% p
 # Add Bacteria column
 Sizes$Bacteria <- "+Bacteria"
 Sizes$Bacteria[Sizes$Col == "4"] <- "No Bacteria"
+Sizes$Bacteria <- relevel(factor(Sizes$Bacteria), ref = "No Bacteria")
 
 # Add treatmen column
 Sizes$Treatment <- as.character(Sizes$Strain)
 Sizes$Treatment[ Sizes$Bacteria == "No Bacteria" ] <- "No Bacteria"
+Sizes$Treatment <- relevel(factor(Sizes$Treatment), ref = "No Bacteria")
 
 head(Sizes)
+
+binvalidation.sizes <- Sizes
+devtools::use_data(binvalidation.sizes,
+                   pkg = "~/rhizogenomics/github/combinatorixData/")
+
