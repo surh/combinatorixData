@@ -1,5 +1,6 @@
 # Read and process contaminated
-contam_file <- system.file("raw/2017-09-05.contaminated_wells.txt", package = "combinatorixData",mustWork = TRUE)
+contam_file <- system.file("raw/2017-09-05.contaminated_wells.txt",
+                           package = "combinatorixData",mustWork = TRUE)
 Contam <- read.table(contam_file, sep = "\t")
 Contam
 Contam <- apply(Contam, 1, function(x){
@@ -23,14 +24,37 @@ Contam <- do.call(rbind,Contam)
 Contam
 
 # Read and process sizes from imaging
-Sizes <- read.table("sizes.txt", sep = "\t", header = TRUE)
+sizes_file1 <- system.file("raw/2017-09-04.binary_sizes_biomass.txt",
+                           package = "combinatorixData",mustWork = TRUE)
+sizes_file2 <- system.file("raw/2017-09-07.binary_sizes_green.txt",
+                           package = "combinatorixData",mustWork = TRUE)
+Sizes1 <- read.table(sizes_file1, sep = "\t", header = TRUE)
+Sizes2 <- read.table(sizes_file2, sep = "\t", header = TRUE)
+
+# Combine two sets of measurements
+Sizes <- rbind(Sizes1, Sizes2)
 head(Sizes)
+
+# Define picture replicate (some plates were imaged twice)
 Sizes$PicRep <- "A"
 Sizes$PicRep[ grep(pattern = "B$",x = as.character(Sizes$PlateID)) ] <- "B"
+
+# Rename levels of columns and rows to match plate labels
 levels(Sizes$Col) <- c("1","2","3","4")
 levels(Sizes$Row) <- c("A","B","C")
+
+# Homogenize Plate ID labels for cases when there are two
 Sizes$PlateID <- sub(pattern = "B$",replacement = "", x = as.character(Sizes$PlateID))
+
+# Add contaminated column
 Sizes$Contaminated <- paste(Sizes$PlateID,Sizes$Row, Sizes$Col, sep = "") %in% paste(Contam$Plate,Contam$Well, sep = "")
+
+# Add Bacteria column
 Sizes$Bacteria <- "+Bacteria"
 Sizes$Bacteria[Sizes$Col == "4"] <- "No Bacteria"
+
+# Add treatmen column
+Sizes$Treatment <- as.character(Sizes$Strain)
+Sizes$Treatment[ Sizes$Bacteria == "No Bacteria" ] <- "No Bacteria"
+
 head(Sizes)
