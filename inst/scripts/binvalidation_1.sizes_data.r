@@ -69,9 +69,12 @@ Sizes$Treatment <- as.character(Sizes$Strain)
 Sizes$Treatment[ Sizes$Bacteria == "No Bacteria" ] <- "No Bacteria"
 Sizes$Treatment <- relevel(factor(Sizes$Treatment), ref = "No Bacteria")
 
+Sizes <- droplevels(Sizes)
+
 head(Sizes)
 
 binvalidation.sizes <- Sizes
 devtools::use_data(binvalidation.sizes,
-                   pkg = "~/rhizogenomics/github/combinatorixData/")
+                   pkg = "~/rhizogenomics/github/combinatorixData/",
+                   overwrite = TRUE)
 
